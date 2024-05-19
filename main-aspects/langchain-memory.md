@@ -1,4 +1,5 @@
 #What is Conversational memory? 
+
 Conversational memory is how a chatbot can respond to multiple queries in a chat-like manner. It enables a coherent conversation, and without it, every query would be treated as an entirely independent input without considering past interactions.
 
 ![The LLM with and without conversational memory. The blue boxes are user prompts and in grey are the LLMs responses. Without conversational memory (right), the LLM cannot respond using knowledge of previous interactions.](https://cdn.sanity.io/images/vr8gru94/production/927ca8cc5d92ee75f36d7eb4bef4685c4e3118e5-2880x1370.png)
