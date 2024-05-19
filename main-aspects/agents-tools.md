@@ -47,7 +47,7 @@ Langchain has 4 types of foundational chains -
 3.  **Sequential**  — A family of chains which processes input in a sequential manner. This means that the output of the first node in the chain, becomes the input of the second node and the output of the second, the input of the third and so on.
 4.  **Transformation**  — A type of chain that allows Python function calls for customizable text manipulation.
 
-**Memory**
+## **Memory**
 
 You can provide attach memory to your so that it remembers the context of the conversation and responds accordingly.
 
