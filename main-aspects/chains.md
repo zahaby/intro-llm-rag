@@ -1,4 +1,4 @@
-## What are chains?
+f## What are chains?
 **A chain is an end-to-end wrapper around multiple individual components executed in a defined order.**
 
 Chains are one of the core concepts of LangChain. Chains allow you to go beyond just a single API call to a language model and instead chain together multiple calls in a logical sequence.
@@ -214,7 +214,7 @@ default_chain.run("What is math?")
 ```
  Math is the study of numbers, shapes, and patterns. It is used to solve problems and understand the world around us. It is a fundamental part of our lives and is used in many different fields, from engineering to finance.
  ```
-## equential Chains
+## Sequential Chains
 
 Sometimes, you might want to make a series of calls to a language model, take the output from one call and use it as the input to another. Sequential chains allow you to connect multiple chains and compose them into pipelines executing a specific scenario.
 
