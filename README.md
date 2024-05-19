@@ -1,4 +1,62 @@
-# TOC
+# LLM Models and RAG Hands-on Guide
+
+Welcome to the LLM Models and RAG Hands-on Guide repository! This guide is designed for technical teams interested in developing basic conversational AI solutions using Retrieval-Augmented Generation (RAG).
+
+## Introduction
+
+This repository provides a comprehensive guide for building conversational AI systems using large language models (LLMs) and RAG techniques. The content combines theoretical knowledge with practical code implementations, making it suitable for those with a basic technical background.
+
+## Key Concepts
+
+### Conversational AI
+
+An introduction to the technology behind conversational AI, covering its fundamentals and applications.
+
+### Large Language Models (LLMs)
+
+Understand what LLMs are, how they work, and their role in conversational AI. This section also explores the differences between LLMs and transformers.
+
+### Transformers
+
+Detailed explanation of transformers, including their pipelines and the Hugging Face library.
+
+### Prompt Engineering
+
+Learn about different types of prompts, prompt engineering techniques, and best practices for using the OpenAI API.
+
+### Embeddings and Vector Stores
+
+Explore the use of embeddings in LLMs, vector databases, and various chunking methods for document splitting.
+
+## Hands-on Examples
+
+### Use Case 1
+
+Implementation details for the first use case, including benchmark results and performance analysis. Refer to the `usecase-1` directory for code and documentation.
+
+### Use Case 2
+
+A detailed walkthrough of integrating actions with a chatbot, such as booking a Google Calendar event. See the `usecase-2` directory for more information.
+
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+
+## Contributors
+
+Please feel free to contribute to enrich the content! 
+
+## Contact
+
+For any questions or feedback, please feel free to contact me directly @[zahaby](https://www.linkedin.com/in/zahaby/).
+
+---
+
+Happy coding!
+
+
+## Table of Contents
 
 This guide is primarily for technical teams engaged in developing a basic conversational AI with RAG solutions. It offers a basic introduction to the technical aspects.
 This guide helps anyone with basic technical background to get involved in the AI domain.
