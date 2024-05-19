@@ -54,7 +54,7 @@ As RAG technique evolves and becomes accessible with frameworks like  [LangChain
 
 ref:https://www.linkedin.com/pulse/context-key-significance-rag-language-models-abhinav-kimothi-nebnc/
 
-𝗡𝗘𝗪 𝗥𝗔𝗚 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 :-  
+## 𝗡𝗘𝗪 𝗥𝗔𝗚 𝘁𝗲𝗰𝗵𝗻𝗶𝗾𝘂𝗲𝘀 :-  
   
 1. 𝗖𝗵𝗮𝗶𝗻 𝗼𝗳 𝗡𝗼𝘁𝗲 - Steps in CoN involve Generating notes for documents that have been retrieved, which result in a more factually correct answer and also because Notes are generated at steps that have been used to break the problem in the final step trustworthiness of the answer also increases.  
   https://cobusgreyling.medium.com/chain-of-note-con-retrieval-for-llms-763ead1ae5c5
