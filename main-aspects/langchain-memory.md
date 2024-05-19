@@ -1,4 +1,4 @@
-#What is Conversational memory? 
+## What is Conversational memory? 
 
 Conversational memory is how a chatbot can respond to multiple queries in a chat-like manner. It enables a coherent conversation, and without it, every query would be treated as an entirely independent input without considering past interactions.
 
