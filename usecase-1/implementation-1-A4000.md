@@ -250,12 +250,9 @@ if 1==0:
 
 if 1==0:
     urls = [
-        "https://www.ultatel.com/cloud-based-phone-system/",
-        "https://www.ultatel.com/cloud-contact-center/",
-        "https://www.ultatel.com/microsoft-teams-contact-center/",
-        "https://www.ultatel.com/hub-app/",
-        "https://www.ultatel.com/voip-business-phone/",
-        "https://www.ultatel.com/plans-prices/"
+        "https://www.someurl.com/some-html/",
+        "https://www.someurl.com/some-content/",
+        "https://www.someurl.com/file-and-docs/"
     ]
 
     loader_urls = UnstructuredURLLoader(urls=urls)
