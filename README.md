@@ -156,7 +156,7 @@ Implementation details for the first use case, including benchmark results and p
 
 ### Use Case 2
 
-A detailed walkthrough of integrating actions with a chatbot, such as booking a Google Calendar event. See the `usecase-2` directory for more information.
+A detailed walkthrough of integrating actions with a chatbot, such as getting weather event. See the `usecase-2` directory for more information.
 
 
 ## License
