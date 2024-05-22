@@ -22,7 +22,7 @@ def run_conversation_book(user_prompt):
             "type": "function",
             "function": {
                 "name": "get_weather",
-                "description": "Set calendar events",
+                "description": "Get Weather",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -94,7 +94,7 @@ print ("[AI] : hi, please pickup a date, time for the meeting")
 
 ```
 - defining the prompt here is very important:
-"content": "Today is 17 April 2024,You are a function calling LLM that Book an event on the calendar at the provided datetime in ISO format with the provided period. if the provided period is not intger set the default period to 1"
+"content": "Today is 17 April 2024,You are a function calling LLM that get the weather info at the provided datetime in ISO format with the provided period in a given location. if the provided period is not intger set the default period to 1"
 
 - The model is not aware of the current date and time, so I am informing the model about today's date.
 
@@ -109,7 +109,7 @@ print ("[AI] : hi, please pickup a date, time for the meeting")
             "type": "function",
             "function": {
                 "name": "get_weather",
-                "description": "Set calendar events",
+                "description": "Get Weather",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -136,7 +136,7 @@ print ("[AI] : hi, please pickup a date, time for the meeting")
 ## get_weather function and Gmail APIs
 
 ```
-# Create Calendar event
+# Get Weather
 def get_weather(str_datetime , period, location):
     #if period == "Custom":
     #    hours = 0.5
@@ -165,7 +165,7 @@ def get_weather(str_datetime , period, location):
 ```
 
 ## TODO:
-- This is a stateless calendar reservation POC, doesn't handle any type of conversation or stateful flow. Need to put this POC in a full context. 
+- This is a stateless POC, doesn't handle any type of conversation or stateful flow. Need to put this POC in a full context. 
 - Handle exceptions, as there is a big window for different error scenarios. 
 
 ### useful links:
