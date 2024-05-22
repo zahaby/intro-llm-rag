@@ -1,5 +1,5 @@
-- Here we are utilizing same stack (groq+deepgram) to build a calendar scheduler POC. 
-- We are integrate Gmail API using Gmail API-Key to access google calendar.
+- Here we are utilizing same stack (groq+deepgram) to get the weather details in a specific location on a specific date for a period. 
+- We are integrate openweathermap using openweathermap to access the weather service.
 - We are using groq tool to perform actions based on the conversation.
 
 # Code Implementation
@@ -10,7 +10,7 @@ def run_conversation_book(user_prompt):
     messages=[
         {
             "role": "system",
-            "content": "Today is 17 April 2024,You are a function calling LLM that Book an event on the calendar at the provided datetime in ISO format with the provided period. if the provided period is not intger set the default period to 1"
+            "content": "Today is 17 April 2024,You are a function calling LLM that get the weather info at the provided datetime in ISO format with the provided period in a given location. if the provided period is not intger set the default period to 1"
         },
         {
             "role": "user",
@@ -21,7 +21,7 @@ def run_conversation_book(user_prompt):
         {
             "type": "function",
             "function": {
-                "name": "book_event",
+                "name": "get_weather",
                 "description": "Set calendar events",
                 "parameters": {
                     "type": "object",
@@ -33,9 +33,13 @@ def run_conversation_book(user_prompt):
                         "period": {
                             "type": "integer",
                             "description": "The event period",
+                        },
+                        "location": {
+                            "type": "string",
+                            "description": "The city and state, e.g. San Francisco, CA",
                         }
                     },
-                    "required": ["str_datetime", "period"],
+                    "required": ["str_datetime", "period","location"],
                 },
             },
         }
@@ -56,7 +60,7 @@ def run_conversation_book(user_prompt):
         # Step 3: call the function
         # Note: the JSON response may not always be valid; be sure to handle errors
         available_functions = {
-            "book_event": book_event,
+            "get_weather": get_weather,
         }  # only one function in this example, but you can have multiple
         messages.append(response_message)  # extend conversation with assistant's reply
         
@@ -104,7 +108,7 @@ print ("[AI] : hi, please pickup a date, time for the meeting")
         {
             "type": "function",
             "function": {
-                "name": "book_event",
+                "name": "get_weather",
                 "description": "Set calendar events",
                 "parameters": {
                     "type": "object",
@@ -126,14 +130,14 @@ print ("[AI] : hi, please pickup a date, time for the meeting")
 ```
 - make sure to define the correct data types.
 - Here, I am informing the model that I am expecting two mandatory params (ste_datetime, period) with types (string, integer), respectively. 
-- Telling the model that the action function is : book_event function.
+- Telling the model that the action function is : get_weather function.
 - Finally pass the extracted params to the function.
 
-## book_event function and Gmail APIs
+## get_weather function and Gmail APIs
 
 ```
 # Create Calendar event
-def book_event(str_datetime , period):
+def get_weather(str_datetime , period, location):
     #if period == "Custom":
     #    hours = 0.5
     #else:
@@ -141,48 +145,32 @@ def book_event(str_datetime , period):
     #hours = int(re.search(r'\d+', period).group())
     hours = period
 
-    # Authenticate Google Calendar API
-    oauth2_client_secret_file = './cred.json'
-    scopes = ['https://www.googleapis.com/auth/calendar']
-    service = authenticate_google(scopes=scopes, oauth2_client_secret_file=oauth2_client_secret_file)
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    location = location.lower()
 
-    # Get email-ids of all subscribed calendars
-    calendars_result = service.calendarList().list().execute()
+    try:
+        response = requests.get(base_url, params=params)
+        data = response.json()
 
-    calendars = calendars_result.get('items', [])
-    
-    print(str_datetime)
-    str_datetime = str_datetime.replace ('AM','').replace('PM','').replace('T',' ')
-    if (len(str_datetime.split(':'))) > 2:
-        str_datetime = str_datetime[:-3]
+        if response.status_code == 200:
+            weather_info = {
+                'temperature': kelvin_to_fahrenheit(data['main']['temp']),
+            }
+            return json.dumps(f"temperature_in_{location}: {weather_info['temperature']}")
+        else:
+            return {'error': f"Error {response.status_code}: {data['message']}"}
 
-    print(str_datetime)
-    
-    # Feature 3: Insert an event
-    event = {
-        'summary': 'AI-Reserved Meeting',
-        'location': 'Zoom meeting',
-        'description': 'A meeting scheduled by AI.',
-        'start': {
-            'dateTime': (datetime.strptime(str_datetime, '%Y-%m-%d %H:%M')).isoformat(),
-            'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-            'dateTime': (datetime.strptime(str_datetime, '%Y-%m-%d %H:%M') + timedelta(hours=hours)).isoformat(),
-            'timeZone': 'America/Los_Angeles',
-        },
-    }
-    created_event = service.events().insert(calendarId="zahaby@gmail.com", body=event).execute()
-    print(f"Created event: {created_event['id']}")
-    return json.dumps({"Created event": created_event['description']})
+    except Exception as e:
+        return {'error': f"An error occurred: {str(e)}"}
 ```
 
 ## TODO:
-- Check the reservation date-time first. (by calling calendar-list API). if reserved suggest other free slots. 
 - This is a stateless calendar reservation POC, doesn't handle any type of conversation or stateful flow. Need to put this POC in a full context. 
 - Handle exceptions, as there is a big window for different error scenarios. 
 
 ### useful links:
+
+https://medium.com/@stevenoluwaniyi/how-to-call-external-functions-using-openai-ais-7650589a127f
 
 https://developers.google.com/gmail/api/quickstart/python#authorize_credentials_for_a_desktop_application
 
