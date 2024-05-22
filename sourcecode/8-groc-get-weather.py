@@ -19,12 +19,13 @@ from datetime import timedelta,datetime
 from groq import Groq
 import os
 import json
-from google_utils import authenticate_google, query_google_calendar_api
 import pandas as pd
 import pickle
 
 
 load_dotenv()
+
+weather_api_key=os.getenv("OPEN_WEATHER_API_KEY")
 
 client = Groq(api_key = "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")
 #MODEL = 'mixtral-8x7b-32768'
@@ -85,8 +86,8 @@ def convert24(str1):
     return datetime.strftime(in_time, "%H:%M")
 
 
-# Create Calendar event
-def book_event(str_datetime , period):
+# get weather
+def get_weather(str_datetime , period, location):
     #if period == "Custom":
     #    hours = 0.5
     #else:
@@ -94,163 +95,27 @@ def book_event(str_datetime , period):
     #hours = int(re.search(r'\d+', period).group())
     hours = period
 
-    # Authenticate Google Calendar API
-    oauth2_client_secret_file = './cred.json'
-    scopes = ['https://www.googleapis.com/auth/calendar']
-    service = authenticate_google(scopes=scopes, oauth2_client_secret_file=oauth2_client_secret_file)
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    location = location.lower()
 
-    # Get email-ids of all subscribed calendars
-    calendars_result = service.calendarList().list().execute()
+    try:
+        response = requests.get(base_url, params=params)
+        data = response.json()
 
-    calendars = calendars_result.get('items', [])
+        if response.status_code == 200:
+            weather_info = {
+                'temperature': kelvin_to_fahrenheit(data['main']['temp']),
+            }
+            return json.dumps(f"temperature_in_{location}: {weather_info['temperature']}")
+        else:
+            return {'error': f"Error {response.status_code}: {data['message']}"}
+
+    except Exception as e:
+        return {'error': f"An error occurred: {str(e)}"}
+
+def kelvin_to_fahrenheit(kelvin):
+    return (kelvin - 273.15) * 9/5 + 32
     
-    print(str_datetime)
-    str_datetime = str_datetime.replace ('AM','').replace('PM','').replace('T',' ')
-    if (len(str_datetime.split(':'))) > 2:
-        str_datetime = str_datetime[:-3]
-
-    print(str_datetime)
-    
-    # Feature 3: Insert an event
-    event = {
-        'summary': 'AI-Reserved Meeting',
-        'location': 'Zoom meeting',
-        'description': 'A meeting scheduled by AI.',
-        'start': {
-            'dateTime': (datetime.strptime(str_datetime, '%Y-%m-%d %H:%M')).isoformat(),
-            'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-            'dateTime': (datetime.strptime(str_datetime, '%Y-%m-%d %H:%M') + timedelta(hours=hours)).isoformat(),
-            'timeZone': 'America/Los_Angeles',
-        },
-    }
-    created_event = service.events().insert(calendarId="zahaby@gmail.com", body=event).execute()
-    print(f"Created event: {created_event['id']}")
-    return json.dumps({"Created event": created_event['description']})
-
-
-# Get Calendar events
-def list_calendar(day):
-    # Authenticate Google Calendar API
-    oauth2_client_secret_file = './cred.json'
-    scopes = ['https://www.googleapis.com/auth/calendar']
-    service = authenticate_google(scopes=scopes, oauth2_client_secret_file=oauth2_client_secret_file)
-
-    # Get email-ids of all subscribed calendars
-    calendars_result = service.calendarList().list().execute()
-
-    calendars = calendars_result.get('items', [])
-    emails = [c['id'] for c in calendars]
-    #print(emails)
-    calendar_results = service.events().list(
-        calendarId="zahaby@gmail.com", 
-        timeMin=day+'T00:00:00Z',
-        timeMax=day+'T23:59:00Z',
-        maxResults=10, 
-        singleEvents=True,
-        orderBy='startTime').execute()
-
-    #print (len(calendar_results.get('items', [])))
-    if len(calendar_results.get('items', [])) > 0:
-        df = pd.DataFrame(calendar_results.get('items', []))
-        
-        #columns_keep = ["summary", "creator", "start", "end", "attendees", "location", "id"]
-        columns_keep = ["summary", "creator", "start", "end", "attendees", "id"]
-        df = df[columns_keep]
-        df = df.rename(columns={"summary": "name"})
-
-        df["timeZone"] = df["start"].apply(lambda x : x.get("timeZone", "Europe/Berlin"))
-        # API delivers entries with dateTime or date, we want a single type in the column
-        df["start"] = df["start"].apply(lambda x : pd.to_datetime(x.get("dateTime", x.get("date")), utc=True))
-        df["end"] = df["end"].apply(lambda x : pd.to_datetime(x.get("dateTime", x.get("date")), utc=True))
-        df["duration"] = df.end - df.start
-
-        #print(df)
-        #df.head(1)
-
-        #return df_test.shape
-        
-        #return json.dumps({"Day": day, "event1": "rooma birthday", "event2": "zahaby birthday"})
-        return df.to_json()
-    else: 
-        return json.dumps({"events": "no events that day"})
-
-def run_conversation(user_prompt):
-    # Step 1: send the conversation and available functions to the model
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a function calling LLM that uses the data extracted from the list_calendar function to answer questions around calendar events. Include the calendar's day in your response."
-        },
-        {
-            "role": "user",
-            "content": user_prompt,
-        }
-    ]
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "list_calendar",
-                "description": "Get calendar events",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "day": {
-                            "type": "string",
-                            "description": "The calendar day",
-                        }
-                    },
-                    "required": ["day"],
-                },
-            },
-        }
-    ]
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        tools=tools,
-        tool_choice="auto",  
-        max_tokens=4096
-    )
-
-    response_message = response.choices[0].message
-    tool_calls = response_message.tool_calls
-    # Step 2: check if the model wanted to call a function
-    if tool_calls:
-        
-        # Step 3: call the function
-        # Note: the JSON response may not always be valid; be sure to handle errors
-        available_functions = {
-            "list_calendar": list_calendar,
-        }  # only one function in this example, but you can have multiple
-        messages.append(response_message)  # extend conversation with assistant's reply
-        
-        # Step 4: send the info for each function call and function response to the model
-        for tool_call in tool_calls:
-            function_name = tool_call.function.name
-            function_to_call = available_functions[function_name]
-            function_args = json.loads(tool_call.function.arguments)
-            print (function_args)
-            
-            function_response = function_to_call(
-                day=function_args.get("day")
-            )
-            messages.append(
-                {
-                    "tool_call_id": tool_call.id,
-                    "role": "tool",
-                    "name": function_name,
-                    "content": function_response,
-                }
-            )  # extend conversation with function response
-        second_response = client.chat.completions.create(
-            model=MODEL,
-            messages=messages
-        )  # get a new response from the model where it can see the function response
-        return second_response.choices[0].message.content
-
 class TranscriptCollector:
     def __init__(self):
         self.reset()
@@ -326,12 +191,12 @@ async def get_transcript(callback):
         return
 
 
-def run_conversation_book(user_prompt):
+def run_get_weather(user_prompt):
     # Step 1: send the conversation and available functions to the model
     messages=[
         {
             "role": "system",
-            "content": "Today is 17 April 2024,You are a function calling LLM that Book an event on the calendar at the provided datetime in ISO format with the provided period. if the provided period is not intger set the default period to 1"
+            "content":  "Today is 17 April 2024,You are a function calling LLM that get the weather info at the provided datetime in ISO format with the provided period in a given location. if the provided period is not intger set the default period to 1"
         },
         {
             "role": "user",
@@ -342,8 +207,8 @@ def run_conversation_book(user_prompt):
         {
             "type": "function",
             "function": {
-                "name": "book_event",
-                "description": "Set calendar events",
+                "name": "get_weather",
+                "description": "Get Weather",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -377,7 +242,7 @@ def run_conversation_book(user_prompt):
         # Step 3: call the function
         # Note: the JSON response may not always be valid; be sure to handle errors
         available_functions = {
-            "book_event": book_event,
+            "get_weather": get_weather,
         }  # only one function in this example, but you can have multiple
         messages.append(response_message)  # extend conversation with assistant's reply
         
@@ -425,7 +290,7 @@ class ConversationManager:
             if "goodbye" in self.transcription_response.lower():
                 break
             
-            llm_response = run_conversation_book(self.transcription_response)
+            llm_response = run_get_weather(self.transcription_response)
 
             tts = TextToSpeech()
             tts.speak(llm_response)
@@ -434,19 +299,15 @@ class ConversationManager:
             self.transcription_response = ""
         '''
 
-        #user_prompt = "Is there any event on 2023-10-15?"
-        #print(run_conversation(user_prompt))
-        #user_prompt = input()
-
         print ("[Zahaby] : I want to book an event on 2024-04-18 on 2:15 PM for 1 hour")    
-        user_prompt = "I want to book an event on 2024-04-18 on 2:15 PM for 1 hour"
+        user_prompt = "I want to get the weather on 2024-04-18 on 2:15 PM for 1 hour in London"
 
         #print ("[Zahaby] : I want to book an event today on 11:15 PM for 1 hour")    
-        #user_prompt = "I want to book an event today on 11:15 PM for 1 hour"
+        #user_prompt = "I want to get the weather today on 11:15 PM for 1 hour in NY"
 
         #print ("[Zahaby] : I want to book an event next Wednsday on 2:15 PM for 1 hour")    
-        #user_prompt = "I want to book an event next Wednsday on 2:15 PM for 1 hour"
-        print (run_conversation_book(user_prompt))
+        #user_prompt = "I want to get the weather next Wednsday on 2:15 PM for 1 hour in CA"
+        print (run_get_weather(user_prompt))
 
 if __name__ == "__main__":
     manager = ConversationManager()
