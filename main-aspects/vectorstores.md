@@ -7,7 +7,7 @@ As such, vector embeddings are a powerful method of indexing and searching acros
 
 Vector databases work using high-dimensional vectors which can contain hundreds of different dimensions, each linked to a specific property of a data object. Thus creating an unrivaled level of complexity.
 
-Not to be confused with a vector index or a vector search library, a vector database is a complete management solution to store and filter metadata in a way that is:
+Not to be confused with a vector index or a vector search library, a vector database is a complete management solution to store and filter metadata in a way that:
 
 -   Is completely scalable
 -   Can be easily backed up
