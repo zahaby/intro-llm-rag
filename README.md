@@ -123,6 +123,7 @@ curating and organizing this information from numerous sources.
   - [benchmark](https://github.com/zahaby/intro-llm-rag/blob/main/usecase-1/benchmark.md)
 - [Use Case – 2   ](https://github.com/zahaby/intro-llm-rag/blob/main/usecase-2/google-calendar.md)
   - [Action integration with chatbot (google calendar booking)  ](https://github.com/zahaby/intro-llm-rag/blob/main/usecase-2/google-calendar.md#code-implementation)
+  - [Action integration with chatbot (get weather)  (https://github.com/zahaby/intro-llm-rag/blob/main/usecase-2/get_weather.md)
 - [Source Code  ](https://github.com/zahaby/intro-llm-rag/tree/main/sourcecode)
 
 
